@@ -29,6 +29,8 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,68 +73,80 @@ public class MainActivity extends AppCompatActivity {
             picker.setCurrentHour(pre_hour);
             picker.setCurrentMinute(pre_minute);
         }
-
+        Button button = (Button)findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), "날짜를 먼저 선택하세요", Toast.LENGTH_LONG).show();
+            }
+        });
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @SuppressLint("DefaultLocale")
             @Override
-            public void onSelectedDayChange(@NonNull CalendarView calendarView, int year, final int month, final int dayOfMonth) {
+            public void onSelectedDayChange(@NonNull CalendarView calendarView, int year, int month, int dayOfMonth) {
+
                 String ymd_text = String.format("%d년 %d월 %d일",year,month+1,dayOfMonth);
-
-                Button button = (Button) findViewById(R.id.button);
-                button.setOnClickListener(new View.OnClickListener()
-
+                switch (calendarView.getId())
                 {
-                    @Override
-                    public void onClick (View arg0){
-                        int hour, hour_24, minute;
-                        String am_pm;
-                        if (Build.VERSION.SDK_INT >= 23) {
-                            hour_24 = picker.getHour();
-                            minute = picker.getMinute();
-                        } else {
-                            hour_24 = picker.getCurrentHour();
-                            minute = picker.getCurrentMinute();
-                        }
-                        if (hour_24 > 12) {
-                            am_pm = "PM";
-                            hour = hour_24 - 12;
-                        } else {
-                            hour = hour_24;
-                            am_pm = "AM";
-                        }
-                        // 현재 지정된 시간으로 알람 시간 설정
+                    case R.id.cView:
 
-                        Calendar calendar = Calendar.getInstance();
-                        Date date = new Date(calendarView.getDate());
-                        calendar.setTime(date);
-                        calendar.setTimeInMillis(System.currentTimeMillis());
-                        calendar.set(Calendar.HOUR_OF_DAY, hour_24);
-                        calendar.set(Calendar.MINUTE, minute);
-                        calendar.set(Calendar.SECOND, 0);
-                        calendar.set(Calendar.YEAR,year);
-                        calendar.set(Calendar.MONTH, month);
-                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        button.setOnClickListener(new View.OnClickListener()
 
-                        // 이미 지난 시간을 지정했다면 다음날 같은 시간으로 설정
+                        {
+                            @Override
+                            public void onClick (View arg0){
+                                int hour, hour_24, minute;
+                                String am_pm;
+                                if (Build.VERSION.SDK_INT >= 23) {
+                                    hour_24 = picker.getHour();
+                                    minute = picker.getMinute();
+                                } else {
+                                    hour_24 = picker.getCurrentHour();
+                                    minute = picker.getCurrentMinute();
+                                }
+                                if (hour_24 > 12) {
+                                    am_pm = "PM";
+                                    hour = hour_24 - 12;
+                                } else {
+                                    hour = hour_24;
+                                    am_pm = "AM";
+                                }
+                                // 현재 지정된 시간으로 알람 시간 설정
+                                Calendar calendar = Calendar.getInstance();
+                                Date date = new Date(calendarView.getDate());
+                                calendar.setTime(date);
+                                calendar.setTimeInMillis(System.currentTimeMillis());
+                                calendar.set(Calendar.HOUR_OF_DAY, hour_24);
+                                calendar.set(Calendar.MINUTE, minute);
+                                calendar.set(Calendar.SECOND, 0);
+                                calendar.set(Calendar.YEAR, year);
+                                calendar.set(Calendar.MONTH, month);
+                                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                                // 이미 지난 시간을 지정했다면 다음날 같은 시간으로 설정
                 /*if (calendar.before(Calendar.getInstance())) {
                     calendar.add(Calendar.DATE, 1);
                 }*/
 
-                        Date currentDateTime = calendar.getTime();
-                        String date_text = new SimpleDateFormat(" a hh시 mm분 ", Locale.getDefault()).format(currentDateTime);
-                        Toast.makeText(getApplicationContext(), ymd_text + date_text +"으로 알람이 설정되었습니다!", Toast.LENGTH_LONG).show();
+                                Date currentDateTime = calendar.getTime();
+                                String date_text = new SimpleDateFormat(" a hh시 mm분 ", Locale.getDefault()).format(currentDateTime);
+                                Toast.makeText(getApplicationContext(), ymd_text + date_text +"으로 알람이 설정되었습니다!", Toast.LENGTH_LONG).show();
 
-                        //  Preference에 설정한 값 저장
-                        SharedPreferences.Editor editor = getSharedPreferences("daily alarm", MODE_PRIVATE).edit();
-                        editor.putLong("nextNotifyTime", (long) calendar.getTimeInMillis());
-                        editor.apply();
+                                //  Preference에 설정한 값 저장
+                                SharedPreferences.Editor editor = getSharedPreferences("daily alarm", MODE_PRIVATE).edit();
+                                editor.putLong("nextNotifyTime", (long) calendar.getTimeInMillis());
+                                editor.apply();
 
 
-                        diaryNotification(calendar);
-                    }
-                });
+                                diaryNotification(calendar);
+                            }
+                        });
+                        break;
+                }
             }
         });
+
+
     }
 
     void diaryNotification(Calendar calendar)
